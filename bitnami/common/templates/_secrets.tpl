@@ -78,6 +78,7 @@ Params:
   - chartName - String - Optional - Name of the chart used when said chart is deployed as a subchart.
   - context - Context - Required - Parent context.
   - failOnNew - Boolean - Optional - Default to true. If set to false, skip errors adding new keys to existing secrets.
+  - b64enc - Boolean - Optional - Default to true. If set to false, skip encoding secret as base64 string.
 The order in which this function returns a secret password:
   1. Already existing 'Secret' resource
      (If a 'Secret' resource is found under the name provided to the 'secret' parameter to this function and that 'Secret' resource contains a key with the name passed as the 'key' parameter to this function then the value of this existing secret password will be returned)
@@ -97,6 +98,7 @@ The order in which this function returns a secret password:
 {{- $providedPasswordKey := include "common.utils.getKeyFromList" (dict "keys" .providedValues "context" $.context) }}
 {{- $providedPasswordValue := include "common.utils.getValueFromKey" (dict "key" $providedPasswordKey "context" $.context) }}
 {{- $secretData := (lookup "v1" "Secret" (include "common.names.namespace" .context) .secret).data }}
+{{- $b64enc := default "true" .b64enc }}
 {{- if $secretData }}
   {{- if hasKey $secretData .key }}
     {{- $password = index $secretData .key | quote }}
@@ -125,7 +127,10 @@ The order in which this function returns a secret password:
     {{- $password = randAlphaNum $passwordLength }}
   {{- end }}
 {{- end -}}
-{{- printf "%s" $password | b64enc | quote -}}
+{{- if eq $b64enc "true" -}}
+{{- $password = $password | b64enc -}}
+{{- end -}}
+{{- printf "%s" $password | quote -}}
 {{- end -}}
 
 {{/*
