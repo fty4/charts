@@ -104,7 +104,7 @@ The order in which this function returns a secret password:
     {{- printf "\nPASSWORDS ERROR: The secret \"%s\" does not contain the key \"%s\"\n" .secret .key | fail -}}
   {{- end -}}
 {{- else if $providedPasswordValue }}
-  {{- $password = $providedPasswordValue | toString | b64enc | quote }}
+  {{- $password = $providedPasswordValue | toString }}
 {{- else }}
 
   {{- if .context.Values.enabled }}
@@ -120,12 +120,12 @@ The order in which this function returns a secret password:
     {{- $subStr := list (lower (randAlpha 1)) (randNumeric 1) (upper (randAlpha 1)) | join "_" }}
     {{- $password = randAscii $passwordLength }}
     {{- $password = regexReplaceAllLiteral "\\W" $password "@" | substr 5 $passwordLength }}
-    {{- $password = printf "%s%s" $subStr $password | toString | shuffle | b64enc | quote }}
+    {{- $password = printf "%s%s" $subStr $password | toString | shuffle }}
   {{- else }}
-    {{- $password = randAlphaNum $passwordLength | b64enc | quote }}
+    {{- $password = randAlphaNum $passwordLength }}
   {{- end }}
 {{- end -}}
-{{- printf "%s" $password -}}
+{{- printf "%s" $password | b64enc | quote -}}
 {{- end -}}
 
 {{/*
